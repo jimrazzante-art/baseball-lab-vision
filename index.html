@@ -937,7 +937,7 @@ $("exportJson").addEventListener("click", () => copyText(JSON.stringify({ athlet
 $("exportCsv").addEventListener("click", () => { const rows = exportRows(); const keys = Object.keys(rows[0] || { athlete: 1 }); const csv = [keys.join(","), ...rows.map((r) => keys.map((k) => JSON.stringify(r[k] ?? "")).join(","))].join("\n"); copyText(csv, "CSV"); });
 /* "Send to Lab": POST each saved session to a Google Apps Script drop box (see lab_dropbox.gs).
    Works from any host, including GitHub Pages. Empty endpoint = feature hidden. */
-const LAB_ENDPOINT = "https://script.google.com/macros/s/AKfycbzOQStwc5yN70AsBpodvCecxgyrfqFhizxR1AjcHe4cFo-Q4TuMVvfzp_MXWTLCKrWk/exec";
+const LAB_ENDPOINT = "https://script.google.com/macros/s/AKfycbzCRIN9vKJEITroA-ud_GygFVsywWV4Fm7v6tCiUPLNNpoozBE_5fNMghfQd0fAKsQ/exec";
 const labEndpoint = () => (settings.labEndpoint || LAB_ENDPOINT || "").trim();
 const LOCAL_SERVER = /^(localhost|127\.|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(location.hostname);
 function sessionSummary(s) { const o = {}; for (const m of METRICS) { const v = m.get(s); if (Number.isFinite(v)) o[m.id] = +v.toFixed(m.d + 1); } return o; }
