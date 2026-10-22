@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Lab Vision Assessment</title>
+<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap">
+<style>
+/* Layout: one full-screen black stage for every test; a scrolling console for setup, results and trends. */
+:root {
+  --bg: #0A0A0A;
+  --surface: #151515;
+  --surface-2: #1F1F1F;
+  --line: #2C2C2A;
+  --fg: #F3F1EE;
+  --muted: #9C9B96;
+  --accent: #00F070;
+  --accent-ink: #063;
+  --accent-dim: #0a7830;
+  --warn: #F5B800;
+  --bad: #E5484D;
+  --font-display: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  --font-body: Roboto, "Segoe UI", Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.45;
+  -webkit-text-size-adjust: 100%; overscroll-behavior: none;
+}
+h1, h2, h3 { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .02em; line-height: 1.05; margin: 0; text-wrap: balance; }
+h1 { font-size: 2.4rem; font-weight: 700; }
+h2 { font-size: 1.7rem; font-weight: 600; }
+h3 { font-size: 1.2rem; font-weight: 600; color: var(--muted); }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+input, select { font: inherit; color: var(--fg); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: .55rem .7rem; }
+input:focus, select:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Console (non-test screens) */
+.console {
+  min-height: 100%;
+  padding-block: calc(16px + env(safe-area-inset-top, 0px)) calc(28px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: 1100px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 22px;
+}
+.brand { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.brand img { width: 56px; height: 56px; border-radius: 50%; }
+.brand .eyebrow { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .14em; color: var(--accent); font-size: .85rem; font-weight: 600; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.row > * { min-width: 0; }
+.grow { flex: 1 1 220px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: .7rem 1.1rem; cursor: pointer; font-weight: 500; touch-action: manipulation; }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-family: var(--font-display); text-transform: uppercase; font-size: 1.25rem; letter-spacing: .04em; padding: .8rem 1.6rem; }
+.btn.danger { color: var(--bad); }
+.btn[disabled] { opacity: .45; cursor: default; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+.tag { display: inline-block; padding: .15rem .55rem; border-radius: 999px; font-size: .78rem; font-weight: 500; letter-spacing: .03em; border: 1px solid var(--line); color: var(--muted); }
+.tag.ok { color: var(--accent); border-color: var(--accent-dim); }
+.tag.warn { color: var(--warn); border-color: #6b5200; }
+.tag.bad { color: var(--bad); border-color: #6b1f22; }
+.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 10px; }
+.check { display: flex; gap: 10px; align-items: flex-start; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+.check .dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 6px; flex: none; background: var(--line); }
+.check.ok .dot { background: var(--accent); }
+.check.warn .dot { background: var(--warn); }
+.check.bad .dot { background: var(--bad); }
+.check .v { font-weight: 500; }
+.blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 10px; }
+.block { display: flex; gap: 10px; align-items: center; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+.block input { width: 20px; height: 20px; accent-color: var(--accent); }
+.block .t { font-weight: 500; }
+.block .d { font-size: .82rem; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; }
+td.num, th.num { text-align: right; }
+.tablewrap { overflow-x: auto; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 10px; }
+.metric { background: var(--surface-2); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.metric .l { font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.metric .v { font-family: var(--font-display); font-size: 2rem; font-weight: 600; line-height: 1.1; }
+.metric .u { font-size: .8rem; color: var(--muted); }
+.metric .delta { font-size: .85rem; }
+.delta.good { color: var(--accent); } .delta.bad { color: var(--bad); } .delta.flat { color: var(--muted); }
+.trends { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 12px; }
+.trend { background: var(--surface-2); border-radius: 8px; padding: 12px 14px; min-width: 0; }
+.trend .l { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.trend .latest { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; }
+.trend svg { width: 100%; height: 110px; display: block; }
+.trend .grid { stroke: var(--line); stroke-width: 1; }
+.trend .ln { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.trend .area { fill: var(--accent); opacity: .08; }
+.trend .pt { fill: var(--surface-2); stroke: var(--accent); stroke-width: 2; }
+.trend .pt.last { fill: var(--accent); }
+.trend .ax { fill: var(--muted); font-size: 10px; font-family: var(--font-body); }
+/* Session visuals */
+.viz { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 12px; }
+.vcard { background: var(--surface-2); border-radius: 8px; padding: 14px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.vcard .l { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.vcard .head { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; line-height: 1.1; }
+.vcard .head b { color: var(--accent); font-weight: 600; }
+.vcard .cap { font-size: .85rem; color: var(--muted); }
+.vcard svg { width: 100%; height: auto; display: block; }
+.vcard .ax { fill: var(--muted); font-size: 10px; font-family: var(--font-body); }
+.vcard .lbl { fill: var(--fg); font-size: 11px; font-family: var(--font-body); }
+.vcard .grid { stroke: var(--line); stroke-width: 1; }
+.vcard .zone { fill: none; stroke: var(--muted); stroke-width: 2; }
+.vcard .plate { fill: var(--line); }
+.vcard .swing { fill: var(--accent); stroke: var(--surface-2); stroke-width: 2; }
+.vcard .chase { fill: var(--bad); stroke: var(--surface-2); stroke-width: 2; }
+.vcard .take { fill: none; stroke: var(--muted); stroke-width: 2; }
+.vcard .miss { fill: none; stroke: var(--bad); stroke-width: 2; stroke-dasharray: 3 3; }
+.vcard .ball { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.vcard .eye { stroke: var(--accent); stroke-width: 2; fill: none; stroke-linejoin: round; }
+.vcard .dotg { fill: var(--accent); stroke: var(--surface-2); stroke-width: 1.5; }
+.vcard .dotb { fill: var(--bad); stroke: var(--surface-2); stroke-width: 1.5; }
+.vcard .dotw { fill: none; stroke: var(--bad); stroke-width: 2; }
+.vcard .med { stroke: var(--fg); stroke-width: 2; }
+.vcard .ref { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.vcard .cal { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.vcard .tgt { fill: var(--fg); }
+.vcard .gz { fill: var(--accent); }
+.vcard .vec { stroke: var(--accent); stroke-width: 1.5; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 16px; font-size: .78rem; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-sizing: border-box; }
+.legend i.swing { background: var(--accent); } .legend i.chase { background: var(--bad); }
+.legend i.take { border: 2px solid var(--muted); } .legend i.miss { border: 2px dashed var(--bad); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: .6rem 1rem; z-index: 50; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.notes { width: 100%; min-height: 70px; resize: vertical; font: inherit; color: var(--fg); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: .6rem; }
+
+/* Stage (full-screen test surface) */
+#stage { position: fixed; inset: 0; background: #000; display: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+#stage.on { display: block; }
+#stageCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#stageText { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; padding: 24px max(24px, env(safe-area-inset-left,0px)); pointer-events: none; }
+#stageText.hidden { display: none; }
+#stageText > * { pointer-events: auto; }
+#stageText h2 { font-size: 2.2rem; }
+#stageText p { max-width: 36rem; font-size: 1.2rem; color: var(--fg); }
+#stageText .sub { color: var(--muted); font-size: 1rem; }
+#hud { position: absolute; top: calc(8px + env(safe-area-inset-top,0px)); left: max(12px, env(safe-area-inset-left,0px)); right: max(12px, env(safe-area-inset-right,0px)); display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); pointer-events: none; font-variant-numeric: tabular-nums; }
+#hud .q { display: flex; gap: 10px; }
+#hud .q b { color: var(--fg); font-weight: 500; }
+#abort { position: absolute; bottom: calc(10px + env(safe-area-inset-bottom,0px)); right: max(12px, env(safe-area-inset-right,0px)); font-size: .8rem; padding: .4rem .7rem; opacity: .7; }
+#gazeDot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 2px solid var(--warn); pointer-events: none; display: none; }
+#pr { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: #000; }
+#pr.on { display: flex; }
+#prVideo { max-width: 100%; max-height: 70vh; background: #000; }
+#prButtons { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; padding: 16px; }
+#prButtons .btn { font-size: 1.3rem; padding: 1rem 1.6rem; min-width: 150px; }
+#video { position: fixed; width: 1px; height: 1px; opacity: .01; pointer-events: none; left: 0; top: 0; }
+#camPreview { width: 100%; max-width: 420px; aspect-ratio: 4/3; background: #000; border-radius: 8px; border: 1px solid var(--line); transform: scaleX(-1); }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+</head>
+<body>
+
+<video id="video" autoplay muted playsinline></video>
+
+<!-- ============ CONSOLE ============ -->
+<div id="console" class="console">
+  <header class="brand">
+    <img src="logo.png" alt="The Baseball Lab">
+    <div>
+      <div class="eyebrow">The Baseball Lab</div>
+      <h1>Vision Assessment</h1>
+    </div>
+    <div class="grow"></div>
+    <div class="row">
+      <button class="btn" id="navHome">Assess</button>
+      <button class="btn" id="navTrends">Trends</button>
+      <button class="btn" id="navSettings">Settings</button>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <section id="viewHome" class="panel">
+    <h2>New session</h2>
+    <div class="row">
+      <div class="field grow">
+        <label for="athleteSel">Athlete</label>
+        <select id="athleteSel"></select>
+      </div>
+      <div class="field grow">
+        <label for="athleteNew">Add athlete</label>
+        <div class="row">
+          <input id="athleteNew" class="grow" placeholder="Name" autocomplete="off">
+          <select id="athleteHand"><option value="R">Bats R</option><option value="L">Bats L</option><option value="S">Switch</option></select>
+          <button class="btn" id="athleteAdd">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <h3>Blocks in this session</h3>
+    <div class="blocks" id="blockList"></div>
+
+    <h3>Station check</h3>
+    <div class="row">
+      <video id="camPreview" autoplay muted playsinline></video>
+      <div class="grow checks" id="checks"></div>
+    </div>
+    <div class="row">
+      <button class="btn" id="camStart">Start camera</button>
+      <button class="btn" id="lockDistance" disabled>Lock chin-rest distance reference</button>
+      <span class="small muted" id="lockInfo"></span>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="startBtn" disabled>Begin assessment</button>
+      <span class="small muted">About 8–10 minutes. The athlete sits in the chin rest for the eye blocks and taps the screen for the reaction blocks.</span>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="viewSummary" class="panel" hidden>
+    <div class="row">
+      <h2 id="sumTitle">Session summary</h2>
+      <div class="grow"></div>
+      <span class="tag" id="sumQuality"></span>
+    </div>
+    <div class="viz" id="sumViz"></div>
+    <h3>All numbers</h3>
+    <div class="metrics" id="sumMetrics"></div>
+    <div class="field">
+      <label for="sumNotes">Notes (fatigue, lighting, anything unusual)</label>
+      <textarea id="sumNotes" class="notes"></textarea>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="sumSave">Save session</button>
+      <button class="btn danger" id="sumDiscard">Discard</button>
+    </div>
+  </section>
+
+  <!-- TRENDS -->
+  <section id="viewTrends" class="panel" hidden>
+    <div class="row">
+      <h2>Trends</h2>
+      <div class="grow"></div>
+      <div class="field"><label for="trendAthlete">Athlete</label><select id="trendAthlete"></select></div>
+    </div>
+    <p class="small muted">Each point is one session. Expect the first 2–3 sessions to improve from learning the test itself; treat those as the baseline. A single-session change smaller than the athlete's own session-to-session scatter is noise.</p>
+    <div class="trends" id="trendCharts"></div>
+    <div class="row">
+      <h3>Session detail</h3>
+      <div class="grow"></div>
+      <div class="field"><label for="trendSession">Session</label><select id="trendSession"></select></div>
+    </div>
+    <div class="viz" id="trendViz"></div>
+    <h3>Sessions</h3>
+    <div class="tablewrap"><table id="trendTable"></table></div>
+    <div class="row">
+      <button class="btn" id="exportJson">Copy all data (JSON)</button>
+      <button class="btn" id="exportCsv">Copy summary (CSV)</button>
+      <a class="btn" id="downloadJson" download="vision_sessions.json" href="#">Download JSON</a>
+      <button class="btn primary" id="syncBtn">Sync to PC</button>
+      <button class="btn primary" id="sendLabBtn">Send to Lab</button>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="viewSettings" class="panel" hidden>
+    <h2>Settings</h2>
+    <div class="row">
+      <div class="field grow"><label for="setDist">Chin rest: eye-to-screen distance (mm)</label><input id="setDist" type="number" inputmode="numeric" min="300" max="900"></div>
+      <div class="field grow"><label for="setDiag">Screen diagonal (inches)</label><input id="setDiag" type="number" inputmode="decimal" step="0.1" min="7" max="16"></div>
+      <div class="field grow"><label for="setShowGaze">Show gaze dot during eye tests (debug)</label><select id="setShowGaze"><option value="0">Off</option><option value="1">On</option></select></div>
+    </div>
+    <p class="small muted" id="geomInfo"></p>
+    <h3>Send results to the Lab</h3>
+    <div class="field"><label for="setLab">Drop-box URL (Google Apps Script web app)</label><input id="setLab" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"></div>
+    <p class="small muted">When set, every saved session is posted to this address and lands in the Lab's Drive folder. Leave empty to keep results on this device only.</p>
+    <h3>Pitch recognition clips</h3>
+    <p class="small muted">Put clips in <code>clips/</code> and list them in <code>clips/clips.json</code> as <code>[{"file":"p01.mp4","type":"FB","strike":true,"cut_ms":550}]</code>. <code>cut_ms</code> is the time from clip start when the video goes black (release + 80–200 ms). Status: <span id="clipStatus">checking…</span></p>
+    <h3>Danger zone</h3>
+    <div class="row"><button class="btn danger" id="wipe">Delete all local data</button><span class="small muted">Data lives only in this iPad's browser. Export before clearing Safari data.</span></div>
+  </section>
+
+  <p class="small muted">Internal tracking tool. Camera frames are processed on-device and never stored; only gaze numbers are kept.</p>
+</div>
+
+<!-- ============ STAGE ============ -->
+<div id="stage">
+  <canvas id="stageCanvas"></canvas>
+  <div id="gazeDot"></div>
+  <div id="pr">
+    <video id="prVideo" playsinline muted></video>
+    <div id="prButtons"></div>
+  </div>
+  <div id="stageText" class="hidden"></div>
+  <div id="hud"><div id="hudLeft"></div><div class="q" id="hudRight"></div></div>
+  <button class="btn" id="abort">End session</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+/* ---------------- storage ---------------- */
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { toast("Could not save: " + e.message); } },
+};
+const K = { athletes: "tbl_vision_athletes", sessions: "tbl_vision_sessions", settings: "tbl_vision_settings" };
+let athletes = LS.get(K.athletes, []);
+let sessions = LS.get(K.sessions, []);
+let settings = Object.assign({ distMm: 500, diagIn: 10.9, showGaze: 0, irisRefPx: null, irisRefDist: null,
+  blocks: { calib: true, pursuit: true, prosac: true, antisac: true, srt: true, gng: true, pr: true } }, LS.get(K.settings, {}));
+
+const $ = (id) => document.getElementById(id);
+const toastEl = $("toast");
+let toastT;
+function toast(msg) { toastEl.textContent = msg; toastEl.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove("show"), 2600); }
+const median = (a) => { const s = a.filter(Number.isFinite).slice().sort((x, y) => x - y); if (!s.length) return NaN; const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const mean = (a) => { const s = a.filter(Number.isFinite); return s.length ? s.reduce((x, y) => x + y, 0) / s.length : NaN; };
+const sd = (a) => { const s = a.filter(Number.isFinite); if (s.length < 2) return NaN; const m = mean(s); return Math.sqrt(s.reduce((acc, v) => acc + (v - m) ** 2, 0) / (s.length - 1)); };
+const iqr = (a) => { const s = a.filter(Number.isFinite).slice().sort((x, y) => x - y); if (s.length < 4) return NaN; const q = (p) => s[Math.min(s.length - 1, Math.floor(p * s.length))]; return q(.75) - q(.25); };
+const fmt = (v, d = 0) => Number.isFinite(v) ? v.toFixed(d) : "—";
+const rand = (a, b) => a + Math.random() * (b - a);
+const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ---------------- geometry ---------------- */
+function geometry() {
+  const sw = screen.width, sh = screen.height;
+  const diagPx = Math.hypot(sw, sh);
+  const pxPerMm = diagPx / (settings.diagIn * 25.4);
+  const degToPx = (deg) => Math.tan(deg * Math.PI / 180) * settings.distMm * pxPerMm;
+  const pxToDeg = (px) => Math.atan(px / (settings.distMm * pxPerMm)) * 180 / Math.PI;
+  return { pxPerMm, degToPx, pxToDeg };
+}
+
+/* ---------------- camera + gaze engine ---------------- */
+const video = $("video");
+const gaze = {
+  ready: false, landmarker: null, stream: null, running: false,
+  latest: null,          // {t, fx, fy, nx, ny, irisPx, blink, ok}
+  model: null,           // {bx, by} regression coefficients
+  samples: [],           // recorded screen-gaze samples while recording
+  recording: false,
+  fps: 0, _fc: 0, _ft: 0,
+  faceFrames: 0, totalFrames: 0,
+};
+async function startCamera() {
+  if (gaze.stream) return true;
+  try {
+    gaze.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 60 } }, audio: false });
+  } catch (e) { toast("Camera blocked: " + e.message); return false; }
+  video.srcObject = gaze.stream; $("camPreview").srcObject = gaze.stream;
+  await video.play().catch(() => {});
+  if (!gaze.landmarker) {
+    toast("Loading face model…");
+    const files = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    gaze.landmarker = await FaceLandmarker.createFromOptions(files, {
+      baseOptions: { modelAssetPath: "models/face_landmarker.task", delegate: "GPU" },
+      runningMode: "VIDEO", numFaces: 1, outputFaceBlendshapes: false, outputFacialTransformationMatrixes: false,
+    });
+  }
+  gaze.ready = true; gaze.running = true;
+  loopFrames();
+  return true;
+}
+function loopFrames() {
+  const step = () => {
+    if (!gaze.running) return;
+    processFrame();
+    if (video.requestVideoFrameCallback) video.requestVideoFrameCallback(step); else requestAnimationFrame(step);
+  };
+  if (video.requestVideoFrameCallback) video.requestVideoFrameCallback(step); else requestAnimationFrame(step);
+}
+const L = { lOut: 33, lIn: 133, lUp: 159, lLo: 145, lIris: 468, lIrisA: 469, lIrisB: 471,
+            rIn: 362, rOut: 263, rUp: 386, rLo: 374, rIris: 473, rIrisA: 474, rIrisB: 476, nose: 1 };
+function processFrame() {
+  if (video.readyState < 2) return;
+  const now = performance.now();
+  gaze._fc++; if (now - gaze._ft > 1000) { gaze.fps = gaze._fc * 1000 / (now - gaze._ft); gaze._fc = 0; gaze._ft = now; }
+  let res;
+  try { res = gaze.landmarker.detectForVideo(video, now); } catch { return; }
+  gaze.totalFrames++;
+  const lm = res.faceLandmarks && res.faceLandmarks[0];
+  if (!lm) { gaze.latest = { t: now, ok: false }; pushSample(now, null); return; }
+  gaze.faceFrames++;
+  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
+  const P = (i) => ({ x: lm[i].x * vw, y: lm[i].y * vh });
+  const eyeRatio = (outer, inner, up, lo, iris) => {
+    const o = P(outer), i = P(inner), u = P(up), l = P(lo), c = P(iris);
+    const w = Math.hypot(i.x - o.x, i.y - o.y), h = Math.hypot(l.x - u.x, l.y - u.y);
+    const hx = ((c.x - o.x) * (i.x - o.x) + (c.y - o.y) * (i.y - o.y)) / (w * w);
+    const vy = ((c.y - u.y)) / (h || 1);
+    return { hx, vy, open: h / (w || 1) };
+  };
+  const le = eyeRatio(L.lOut, L.lIn, L.lUp, L.lLo, L.lIris);
+  const re = eyeRatio(L.rIn, L.rOut, L.rUp, L.rLo, L.rIris);
+  const lo = P(L.lOut), ro = P(L.rOut), nose = P(L.nose);
+  const eyeDist = Math.hypot(ro.x - lo.x, ro.y - lo.y) || 1;
+  const mid = { x: (lo.x + ro.x) / 2, y: (lo.y + ro.y) / 2 };
+  const irisPx = (Math.hypot(P(L.lIrisA).x - P(L.lIrisB).x, P(L.lIrisA).y - P(L.lIrisB).y) + Math.hypot(P(L.rIrisA).x - P(L.rIrisB).x, P(L.rIrisA).y - P(L.rIrisB).y)) / 2;
+  const blink = Math.min(le.open, re.open) < 0.16;
+  const s = { t: now, ok: !blink, blink, fx: (le.hx + re.hx) / 2, fy: (le.vy + re.vy) / 2,
+              nx: (nose.x - mid.x) / eyeDist, ny: (nose.y - mid.y) / eyeDist, irisPx, eyeDist };
+  gaze.latest = s;
+  pushSample(now, s);
+}
+const features = (s) => [1, s.fx, s.fy, s.fx * s.fx, s.fy * s.fy, s.fx * s.fy, s.nx, s.ny];
+function predict(s) {
+  if (!gaze.model || !s || !s.ok) return null;
+  const f = features(s);
+  const x = f.reduce((a, v, i) => a + v * gaze.model.bx[i], 0);
+  const y = f.reduce((a, v, i) => a + v * gaze.model.by[i], 0);
+  return { x, y };
+}
+function pushSample(t, s) {
+  if (!gaze.recording) return;
+  const g = predict(s);
+  gaze.samples.push({ t, x: g ? g.x : NaN, y: g ? g.y : NaN, ok: !!g });
+  if (g && settings.showGaze == 1) { gazeDot.style.display = "block"; gazeDot.style.left = g.x + "px"; gazeDot.style.top = g.y + "px"; }
+}
+function startRec() { gaze.samples = []; gaze.recording = true; }
+function stopRec() { gaze.recording = false; gazeDot.style.display = "none"; return gaze.samples; }
+/* least squares with ridge, solved by Gaussian elimination */
+function fitAxis(X, y, lambda = 1e-3) {
+  const n = X[0].length; const A = Array.from({ length: n }, () => new Array(n + 1).fill(0));
+  for (let r = 0; r < X.length; r++) for (let i = 0; i < n; i++) { for (let j = 0; j < n; j++) A[i][j] += X[r][i] * X[r][j]; A[i][n] += X[r][i] * y[r]; }
+  for (let i = 1; i < n; i++) A[i][i] += lambda;
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]];
+    const d = A[c][c] || 1e-9;
+    for (let r = 0; r < n; r++) { if (r === c) continue; const f = A[r][c] / d; for (let k = c; k <= n; k++) A[r][k] -= f * A[c][k]; }
+  }
+  return A.map((row, i) => row[n] / (row[i] || 1e-9));
+}
+
+/* ---------------- stage drawing ---------------- */
+const stage = $("stage"), canvas = $("stageCanvas"), ctx = canvas.getContext("2d");
+const stageText = $("stageText"), gazeDot = $("gazeDot"), hudLeft = $("hudLeft"), hudRight = $("hudRight");
+let W = 0, H = 0, DPR = 1;
+function sizeCanvas() { DPR = Math.min(2, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight; canvas.width = W * DPR; canvas.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+addEventListener("resize", () => { if (stage.classList.contains("on")) sizeCanvas(); });
+function clear() { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H); }
+function dot(x, y, r, color = "#F3F1EE") { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); }
+function cross(x, y, s = 14, color = "#9C9B96") { ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - s, y); ctx.lineTo(x + s, y); ctx.moveTo(x, y - s); ctx.lineTo(x, y + s); ctx.stroke(); }
+function baseball(x, y, r) {
+  dot(x, y, r, "#F3F1EE");
+  ctx.strokeStyle = "#E5484D"; ctx.lineWidth = Math.max(2, r * 0.09); ctx.lineCap = "round";
+  ctx.beginPath(); ctx.arc(x - r * 0.95, y, r * 0.75, -Math.PI * 0.42, Math.PI * 0.42); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + r * 0.95, y, r * 0.75, Math.PI * 0.58, Math.PI * 1.42); ctx.stroke();
+}
+function hud(left, right) { hudLeft.textContent = left || ""; hudRight.innerHTML = right || ""; }
+function qualityHud() { const f = gaze.fps ? gaze.fps.toFixed(0) : "–"; const face = gaze.latest && gaze.latest.ok; return `<span>cam <b>${f} fps</b></span><span>face <b>${face ? "ok" : "lost"}</b></span>`; }
+let hudTimer = null;
+function liveHud(label) { clearInterval(hudTimer); hudTimer = setInterval(() => hud(label, qualityHud()), 250); }
+function stopHud() { clearInterval(hudTimer); hud("", ""); }
+
+function showText(html) { stageText.innerHTML = html; stageText.classList.remove("hidden"); }
+function hideText() { stageText.classList.add("hidden"); }
+function waitTap() { return new Promise((res) => { const h = (e) => { stage.removeEventListener("pointerdown", h); res(e); }; stage.addEventListener("pointerdown", h); }); }
+function instructions(title, body, sub = "Tap anywhere to begin") {
+  clear(); showText(`<h2>${title}</h2><p>${body}</p><p class="sub">${sub}</p>`);
+  return waitTap().then(() => hideText());
+}
+let aborted = false;
+$("abort").addEventListener("click", () => { aborted = true; });
+function checkAbort() { if (aborted) throw new Error("aborted"); }
+function nextFrame() { return new Promise((r) => requestAnimationFrame(r)); }
+async function waitMs(ms) { const t0 = performance.now(); while (performance.now() - t0 < ms) { checkAbort(); await nextFrame(); } }
+
+/* ---------------- blocks ---------------- */
+const BLOCKS = [
+  { id: "calib", name: "Gaze calibration", desc: "9-point calibration + accuracy check. Required for the eye blocks.", eye: true },
+  { id: "pursuit", name: "Smooth pursuit", desc: "Follow a moving ball at two speeds. Tracking error, gain, lag.", eye: true },
+  { id: "prosac", name: "Saccades", desc: "Look to a ball that jumps left/right. Latency.", eye: true },
+  { id: "antisac", name: "Anti-saccades", desc: "Look AWAY from the ball. Error rate = response inhibition.", eye: true },
+  { id: "srt", name: "Simple reaction", desc: "Tap when the ball appears. Baseline reaction time.", eye: false },
+  { id: "gng", name: "Swing / take", desc: "Tap only when the ball is in the zone. Decision speed and chase rate.", eye: false },
+  { id: "pr", name: "Pitch recognition", desc: "Clips cut off after release. Needs clips/clips.json.", eye: false },
+];
+
+async function runCalibration() {
+  const g = geometry();
+  await instructions("Calibration", "Keep your chin on the rest and your head still. A green ball will appear in 9 places. Look at the center of each one and keep looking until it disappears.");
+  const pts = [];
+  for (const yy of [0.12, 0.5, 0.88]) for (const xx of [0.1, 0.5, 0.9]) pts.push({ x: W * xx, y: H * yy });
+  shuffle(pts);
+  const X = [], Y1 = [], Y2 = [];
+  liveHud("Calibration");
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i]; const t0 = performance.now(); const dur = 1500, settle = 700;
+    const collected = [];
+    while (performance.now() - t0 < dur) {
+      checkAbort();
+      const el = performance.now() - t0; const r = 22 - 12 * Math.min(1, el / dur);
+      clear(); dot(p.x, p.y, r, "#00F070"); dot(p.x, p.y, 3, "#000");
+      if (el > settle && gaze.latest && gaze.latest.ok && performance.now() - gaze.latest.t < 100) collected.push(gaze.latest);
+      await nextFrame();
+    }
+    if (collected.length < 5) { i--; toast("Face not tracked, repeating point"); continue; }
+    for (const s of collected) { X.push(features(s)); Y1.push(p.x); Y2.push(p.y); }
+  }
+  gaze.model = { bx: fitAxis(X, Y1), by: fitAxis(X, Y2) };
+  // validation at 4 off-grid points
+  const vpts = shuffle([{ x: W * 0.3, y: H * 0.3 }, { x: W * 0.7, y: H * 0.3 }, { x: W * 0.3, y: H * 0.7 }, { x: W * 0.7, y: H * 0.7 }]);
+  const errs = [], validation = [];
+  for (const p of vpts) {
+    const t0 = performance.now(); startRec();
+    while (performance.now() - t0 < 1300) { checkAbort(); clear(); dot(p.x, p.y, 16, "#F3F1EE"); dot(p.x, p.y, 3, "#000"); await nextFrame(); }
+    const s = stopRec().filter((q) => q.ok && q.t - t0 > 600);
+    if (s.length) { const gx = median(s.map((q) => q.x)), gy = median(s.map((q) => q.y)); const e = g.pxToDeg(Math.hypot(gx - p.x, gy - p.y)); errs.push(e); validation.push({ u: +(p.x / W).toFixed(3), v: +(p.y / H).toFixed(3), gu: +(gx / W).toFixed(3), gv: +(gy / H).toFixed(3), errDeg: +e.toFixed(2) }); }
+  }
+  stopHud();
+  const err = mean(errs);
+  const grade = err <= 2.5 ? "ok" : err <= 4 ? "warn" : "bad";
+  return { accuracyDeg: err, grade, points: pts.length, samples: X.length, validation, stageAspect: +(W / H).toFixed(3) };
+}
+
+async function runPursuit() {
+  const g = geometry();
+  await instructions("Smooth pursuit", "Follow the ball with your eyes as it moves side to side. Keep your head still on the chin rest.");
+  const amp = Math.min(g.degToPx(12), W / 2 - 80);
+  const results = [];
+  for (const hz of [0.25, 0.5]) {
+    liveHud(`Pursuit ${hz} Hz`);
+    const dur = 12000, t0 = performance.now(); const target = [];
+    startRec();
+    while (performance.now() - t0 < dur) {
+      checkAbort();
+      const t = performance.now(); const x = W / 2 + amp * Math.sin(2 * Math.PI * hz * (t - t0) / 1000);
+      clear(); baseball(x, H / 2, 18); target.push({ t, x });
+      await nextFrame();
+    }
+    const s = stopRec();
+    const valid = s.filter((q) => q.ok && q.t - t0 > 1500);
+    const tx = (t) => { let lo = 0, hi = target.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (target[m].t <= t) lo = m; else hi = m; } return target[lo].x; };
+    const pairs = valid.map((q) => ({ g: q.x - W / 2, t: tx(q.t) - W / 2, time: q.t }));
+    const trace = pairs.filter((_, i) => i % 2 === 0).map((p) => [Math.round(p.time - t0), +g.pxToDeg(p.t).toFixed(2), +g.pxToDeg(p.g).toFixed(2)]);
+    const rms = Math.sqrt(mean(pairs.map((p) => (p.g - p.t) ** 2)));
+    const mt = mean(pairs.map((p) => p.t)), mg = mean(pairs.map((p) => p.g));
+    const gain = mean(pairs.map((p) => (p.g - mg) * (p.t - mt))) / (mean(pairs.map((p) => (p.t - mt) ** 2)) || 1);
+    // lag: shift gaze earlier by L ms and find best correlation
+    let bestLag = 0, bestR = -2;
+    for (let lag = 0; lag <= 400; lag += 16) {
+      const pr = valid.map((q) => ({ g: q.x - W / 2, t: tx(q.t - lag) - W / 2 }));
+      const a = pr.map((p) => p.g), b = pr.map((p) => p.t); const ma = mean(a), mb = mean(b);
+      const r = mean(a.map((v, i) => (v - ma) * (b[i] - mb))) / (Math.sqrt(mean(a.map((v) => (v - ma) ** 2)) * mean(b.map((v) => (v - mb) ** 2))) || 1);
+      if (r > bestR) { bestR = r; bestLag = lag; }
+    }
+    results.push({ hz, rmsDeg: g.pxToDeg(rms), gain, lagMs: bestLag, r: bestR, validPct: 100 * valid.length / Math.max(1, s.filter((q) => q.t - t0 > 1500).length), ampDeg: g.pxToDeg(amp), trace });
+    stopHud(); clear(); await waitMs(600);
+  }
+  return { speeds: results, rmsDeg: mean(results.map((r) => r.rmsDeg)), gain: mean(results.map((r) => r.gain)), lagMs: mean(results.map((r) => r.lagMs)), validPct: mean(results.map((r) => r.validPct)) };
+}
+
+async function runSaccades(anti) {
+  const g = geometry();
+  const N = 12;
+  if (anti) await instructions("Anti-saccades", "A red square will flash on one side. Look to the OPPOSITE side as fast as you can. Don't look at the square. Return to the center cross after each one.");
+  else await instructions("Saccades", "Look at the center cross. When the ball jumps to one side, look at it as fast as you can, then return to the center.");
+  const A = Math.min(g.degToPx(10), W / 2 - 80);
+  const trials = []; const sides = shuffle(Array.from({ length: N }, (_, i) => (i % 2 ? 1 : -1)));
+  liveHud(anti ? "Anti-saccades" : "Saccades");
+  for (let i = 0; i < N; i++) {
+    const side = sides[i];
+    clear(); cross(W / 2, H / 2); startRec(); await waitMs(rand(1000, 2000));
+    const onset = performance.now();
+    const tx = W / 2 + side * A;
+    while (performance.now() - onset < 1000) {
+      checkAbort(); clear(); cross(W / 2, H / 2, 10, "#444");
+      if (anti) { ctx.fillStyle = "#E5484D"; ctx.fillRect(tx - 16, H / 2 - 16, 32, 32); } else baseball(tx, H / 2, 16);
+      await nextFrame();
+    }
+    const s = stopRec();
+    let base = median(s.filter((q) => q.ok && q.t < onset && q.t > onset - 300).map((q) => q.x));
+    if (!Number.isFinite(base)) base = W / 2;
+    const post = s.filter((q) => q.ok && q.t >= onset);
+    const thr = 0.3 * A;
+    let firstDir = 0, latency = NaN;
+    for (let k = 0; k < post.length - 1; k++) {
+      const d = post[k].x - base, d2 = post[k + 1].x - base;
+      if (Math.abs(d) > thr && Math.abs(d2) > thr && Math.sign(d) === Math.sign(d2)) { firstDir = Math.sign(d); latency = post[k].t - onset; break; }
+    }
+    const correctDir = anti ? -side : side;
+    const responded = firstDir !== 0;
+    const correct = responded && firstDir === correctDir;
+    const valid = responded && latency >= 80 && latency <= 700;
+    trials.push({ side, latency, correct, responded, valid, validFrames: post.length });
+    clear(); await waitMs(300);
+  }
+  stopHud();
+  const good = trials.filter((t) => t.valid && t.correct);
+  const resp = trials.filter((t) => t.responded && t.latency >= 80);
+  return { n: N, latencyMs: median(good.map((t) => t.latency)), latencySd: sd(good.map((t) => t.latency)),
+           errorPct: resp.length ? 100 * resp.filter((t) => !t.correct).length / resp.length : NaN,
+           noResponsePct: 100 * trials.filter((t) => !t.responded).length / N, trials };
+}
+
+function tapOnce(timeoutMs) {
+  return new Promise((res) => {
+    let done = false;
+    const h = (e) => { if (done) return; done = true; stage.removeEventListener("pointerdown", h); res(e.timeStamp || performance.now()); };
+    stage.addEventListener("pointerdown", h);
+    setTimeout(() => { if (!done) { done = true; stage.removeEventListener("pointerdown", h); res(null); } }, timeoutMs);
+  });
+}
+function drainTaps() { return new Promise((r) => setTimeout(r, 0)); }
+
+async function runSimpleRT() {
+  await instructions("Simple reaction", "Watch the center. The moment a ball appears, tap the screen. Keep a thumb ready, don't guess.");
+  const N = 13; const rts = []; let early = 0;   // first trial is a warm-up and is dropped
+  hud("Simple reaction", "");
+  for (let i = 0; i < N; i++) {
+    clear(); cross(W / 2, H / 2);
+    const fore = rand(1000, 3000); const t0 = performance.now(); let jumped = false;
+    const earlyTap = new Promise((r) => { const h = () => { stage.removeEventListener("pointerdown", h); r(true); }; stage.addEventListener("pointerdown", h); setTimeout(() => { stage.removeEventListener("pointerdown", h); r(false); }, fore); });
+    await waitMs(fore);
+    if (await earlyTap) { early++; i--; clear(); showText(`<p class="sub">Too early. Wait for the ball.</p>`); await waitMs(900); hideText(); continue; }
+    clear(); baseball(W / 2, H / 2, 40); await nextFrame();
+    const onset = performance.now();
+    const tap = await tapOnce(1500);
+    if (tap === null) { rts.push(NaN); } else { const rt = tap - onset; if (rt < 100) { early++; i--; continue; } rts.push(rt); }
+    clear(); await waitMs(500);
+    hud("Simple reaction", `<span>${i + 1}/${N}</span>`);
+  }
+  hud("", "");
+  const scored = rts.slice(1);
+  return { n: scored.length, medianMs: median(scored), sdMs: sd(scored), iqrMs: iqr(scored), misses: scored.filter((v) => !Number.isFinite(v)).length, anticipations: early, rts: scored, warmupMs: rts[0] };
+}
+
+async function runGoNoGo() {
+  await instructions("Swing / take", "A strike zone is drawn in the center. When the ball shows up INSIDE the zone, tap fast (swing). If it's outside, don't tap (take). You have under a second.");
+  const N = 31, nGo = 21; const seq = [true, ...shuffle(Array.from({ length: N - 1 }, (_, i) => i < nGo))];   // first trial is a warm-up and is dropped
+  const zw = Math.min(W, H) * 0.42, zh = zw * 1.25, zx = W / 2 - zw / 2, zy = H / 2 - zh / 2, r = zw * 0.11;
+  const drawZone = () => { ctx.strokeStyle = "#9C9B96"; ctx.lineWidth = 3; ctx.strokeRect(zx, zy, zw, zh); };
+  const trials = [];
+  hud("Swing / take", "");
+  for (let i = 0; i < N; i++) {
+    const go = seq[i];
+    clear(); drawZone(); await waitMs(rand(800, 1600));
+    let bx, by;
+    if (go) { bx = rand(zx + r * 1.3, zx + zw - r * 1.3); by = rand(zy + r * 1.3, zy + zh - r * 1.3); }
+    else {
+      const side = Math.floor(rand(0, 4));
+      if (side === 0) { bx = rand(zx - r * 3.2, zx - r * 1.6); by = rand(zy, zy + zh); }
+      else if (side === 1) { bx = rand(zx + zw + r * 1.6, zx + zw + r * 3.2); by = rand(zy, zy + zh); }
+      else if (side === 2) { bx = rand(zx - r, zx + zw + r); by = rand(zy - r * 3.2, zy - r * 1.6); }
+      else { bx = rand(zx - r, zx + zw + r); by = rand(zy + zh + r * 1.6, zy + zh + r * 3.2); }
+    }
+    clear(); drawZone(); baseball(bx, by, r); await nextFrame();
+    const onset = performance.now();
+    const tap = await tapOnce(800);
+    const rt = tap === null ? null : tap - onset;
+    trials.push({ go, rt, tapped: tap !== null, u: +((bx - zx) / zw).toFixed(3), v: +((by - zy) / zh).toFixed(3) });
+    clear(); drawZone(); await waitMs(300);
+    hud("Swing / take", `<span>${i + 1}/${N}</span>`);
+  }
+  hud("", "");
+  trials.shift();
+  const goT = trials.filter((t) => t.go), ngT = trials.filter((t) => !t.go);
+  const hits = goT.filter((t) => t.tapped && t.rt >= 100);
+  return { n: trials.length, medianMs: median(hits.map((t) => t.rt)), sdMs: sd(hits.map((t) => t.rt)),
+           missPct: 100 * goT.filter((t) => !t.tapped).length / goT.length,
+           chasePct: 100 * ngT.filter((t) => t.tapped).length / ngT.length,
+           anticipations: goT.filter((t) => t.tapped && t.rt < 100).length, trials };
+}
+
+let clipList = null;
+async function loadClips() {
+  try { const r = await fetch("clips/clips.json", { cache: "no-store" }); if (!r.ok) throw 0; clipList = await r.json(); if (!Array.isArray(clipList) || !clipList.length) clipList = null; }
+  catch { clipList = null; }
+  $("clipStatus").textContent = clipList ? `${clipList.length} clips loaded` : "no clips configured (block will be skipped)";
+}
+async function runPitchRecognition() {
+  if (!clipList) return { skipped: true };
+  await instructions("Pitch recognition", "You'll see a pitch from the batter's box. The screen goes black shortly after release. Decide: SWING or TAKE, then pick the pitch type. Go with your first read.");
+  const pr = $("pr"), v = $("prVideo"), btns = $("prButtons");
+  pr.classList.add("on");
+  const trials = []; const clips = shuffle(clipList.slice()).slice(0, 40);
+  const TYPES = [["FB", "Fastball"], ["CB", "Curve"], ["SL", "Slider"], ["CH", "Change"]];
+  const ask = (opts) => new Promise((res) => { btns.innerHTML = ""; const t0 = performance.now(); for (const [val, label] of opts) { const b = document.createElement("button"); b.className = "btn"; b.textContent = label; b.onclick = () => res({ val, ms: performance.now() - t0 }); btns.appendChild(b); } });
+  for (let i = 0; i < clips.length; i++) {
+    checkAbort();
+    const c = clips[i]; btns.innerHTML = ""; v.style.visibility = "visible"; v.src = "clips/" + c.file; v.currentTime = 0;
+    hud(`Pitch recognition ${i + 1}/${clips.length}`, "");
+    await new Promise((r) => { v.onloadeddata = r; v.onerror = r; });
+    await v.play().catch(() => {});
+    await new Promise((r) => { const chk = () => { if (v.currentTime * 1000 >= c.cut_ms || v.ended) { v.pause(); r(); } else requestAnimationFrame(chk); }; chk(); });
+    v.style.visibility = "hidden";
+    const d = await ask([["swing", "SWING"], ["take", "TAKE"]]);
+    const ty = await ask(TYPES);
+    trials.push({ file: c.file, strike: !!c.strike, type: c.type, cut_ms: c.cut_ms, decision: d.val, decisionMs: d.ms, typeCall: ty.val, zoneCorrect: (d.val === "swing") === !!c.strike, typeCorrect: ty.val === c.type });
+    btns.innerHTML = ""; await waitMs(400);
+  }
+  pr.classList.remove("on"); hud("", "");
+  return { n: trials.length, zoneAccPct: 100 * trials.filter((t) => t.zoneCorrect).length / trials.length, typeAccPct: 100 * trials.filter((t) => t.typeCorrect).length / trials.length,
+           decisionMs: median(trials.map((t) => t.decisionMs)), chasePct: 100 * trials.filter((t) => !t.strike && t.decision === "swing").length / Math.max(1, trials.filter((t) => !t.strike).length), trials };
+}
+
+/* ---------------- session runner ---------------- */
+let pending = null;
+async function runSession() {
+  const athleteId = $("athleteSel").value; if (!athleteId) { toast("Pick an athlete first"); return; }
+  const g = geometry();
+  const wantEye = ["pursuit", "prosac", "antisac"].some((b) => settings.blocks[b]);
+  if (wantEye && !gaze.ready) { toast("Start the camera first"); return; }
+  if (wantEye && !settings.irisRefPx) { toast("Lock the chin-rest distance reference first"); return; }
+  aborted = false;
+  stage.classList.add("on"); $("console").hidden = true; sizeCanvas(); clear();
+  let wake = null; try { wake = await navigator.wakeLock?.request("screen"); } catch {}
+  const session = { id: Date.now().toString(36), athleteId, date: new Date().toISOString(), device: { ua: navigator.userAgent, screen: [screen.width, screen.height], dpr: devicePixelRatio, stage: [W, H] },
+    settings: { distMm: settings.distMm, diagIn: settings.diagIn, pxPerMm: g.pxPerMm, irisRefPx: settings.irisRefPx }, blocks: {}, quality: {} };
+  try {
+    const dist = distanceCheck();
+    session.quality.distanceRatio = dist.ratio; session.quality.camFps = gaze.fps;
+    if (wantEye && settings.blocks.calib) { session.blocks.calib = await runCalibration(); if (session.blocks.calib.grade === "bad") { await instructions("Calibration is poor", `Average error ${fmt(session.blocks.calib.accuracyDeg, 1)}°. Check lighting and chin rest, then tap to recalibrate.`); session.blocks.calib = await runCalibration(); } }
+    if (settings.blocks.pursuit && gaze.model) session.blocks.pursuit = await runPursuit();
+    if (settings.blocks.prosac && gaze.model) session.blocks.prosac = await runSaccades(false);
+    if (settings.blocks.antisac && gaze.model) session.blocks.antisac = await runSaccades(true);
+    if (settings.blocks.srt) session.blocks.srt = await runSimpleRT();
+    if (settings.blocks.gng) session.blocks.gng = await runGoNoGo();
+    if (settings.blocks.pr) session.blocks.pr = await runPitchRecognition();
+    clear(); showText(`<h2>Done</h2><p>Nice work. Hand the iPad back to the coach.</p><p class="sub">Tap to see the summary</p>`); await waitTap(); hideText();
+  } catch (e) {
+    if (e.message !== "aborted") { console.error(e); toast("Error: " + e.message); }
+    stopHud(); gaze.recording = false;
+    if (!Object.keys(session.blocks).length) { exitStage(wake); return; }
+    session.partial = true;
+  }
+  exitStage(wake);
+  pending = session; showSummary(session);
+}
+function exitStage(wake) { stage.classList.remove("on"); $("console").hidden = false; $("pr").classList.remove("on"); stopHud(); try { wake && wake.release(); } catch {} }
+function distanceCheck() {
+  const s = gaze.latest; if (!s || !s.ok || !settings.irisRefPx) return { ratio: NaN };
+  return { ratio: s.irisPx / settings.irisRefPx };
+}
+
+/* ---------------- summary + metrics ---------------- */
+const METRICS = [
+  { id: "calibErr", label: "Calibration error", unit: "deg", d: 1, get: (s) => s.blocks.calib?.accuracyDeg, lowerBetter: true },
+  { id: "pursuitRms", label: "Pursuit tracking error", unit: "deg RMS", d: 2, get: (s) => s.blocks.pursuit?.rmsDeg, lowerBetter: true },
+  { id: "pursuitGain", label: "Pursuit gain", unit: "1.0 = perfect", d: 2, get: (s) => s.blocks.pursuit?.gain, target: 1 },
+  { id: "pursuitLag", label: "Pursuit lag", unit: "ms", d: 0, get: (s) => s.blocks.pursuit?.lagMs, lowerBetter: true },
+  { id: "sacLat", label: "Saccade latency", unit: "ms median", d: 0, get: (s) => s.blocks.prosac?.latencyMs, lowerBetter: true },
+  { id: "antiErr", label: "Anti-saccade errors", unit: "% wrong way", d: 0, get: (s) => s.blocks.antisac?.errorPct, lowerBetter: true },
+  { id: "antiLat", label: "Anti-saccade latency", unit: "ms median", d: 0, get: (s) => s.blocks.antisac?.latencyMs, lowerBetter: true },
+  { id: "srt", label: "Simple reaction", unit: "ms median", d: 0, get: (s) => s.blocks.srt?.medianMs, lowerBetter: true },
+  { id: "srtSd", label: "Reaction consistency", unit: "ms SD", d: 0, get: (s) => s.blocks.srt?.sdMs, lowerBetter: true },
+  { id: "gngRt", label: "Swing decision", unit: "ms median", d: 0, get: (s) => s.blocks.gng?.medianMs, lowerBetter: true },
+  { id: "gngChase", label: "Chase (swing out of zone)", unit: "%", d: 0, get: (s) => s.blocks.gng?.chasePct, lowerBetter: true },
+  { id: "gngMiss", label: "Missed swings in zone", unit: "%", d: 0, get: (s) => s.blocks.gng?.missPct, lowerBetter: true },
+  { id: "prZone", label: "Pitch recognition: zone", unit: "% correct", d: 0, get: (s) => s.blocks.pr?.zoneAccPct, lowerBetter: false },
+  { id: "prType", label: "Pitch recognition: type", unit: "% correct", d: 0, get: (s) => s.blocks.pr?.typeAccPct, lowerBetter: false },
+  { id: "prTime", label: "Pitch decision time", unit: "ms median", d: 0, get: (s) => s.blocks.pr?.decisionMs, lowerBetter: true },
+];
+function athleteName(id) { const a = athletes.find((x) => x.id === id); return a ? a.name : "Unknown"; }
+function prevSession(s) { return sessions.filter((x) => x.athleteId === s.athleteId && x.date < s.date).sort((a, b) => a.date < b.date ? 1 : -1)[0]; }
+function showSummary(s) {
+  switchView("Summary");
+  $("sumTitle").textContent = `${athleteName(s.athleteId)} · ${new Date(s.date).toLocaleDateString()}`;
+  const q = []; const cal = s.blocks.calib;
+  if (cal) q.push(`calibration ${fmt(cal.accuracyDeg, 1)}°`);
+  if (s.blocks.pursuit) q.push(`${fmt(s.blocks.pursuit.validPct)}% frames tracked`);
+  if (Number.isFinite(s.quality.distanceRatio)) q.push(`distance ${fmt(100 * s.quality.distanceRatio)}% of reference`);
+  if (s.partial) q.push("ended early");
+  const qEl = $("sumQuality"); qEl.textContent = q.join(" · ") || "no quality data";
+  qEl.className = "tag " + (cal ? cal.grade : "");
+  const prev = prevSession(s);
+  $("sumMetrics").innerHTML = METRICS.map((m) => {
+    const v = m.get(s); if (!Number.isFinite(v)) return "";
+    let delta = "";
+    if (prev) { const pv = m.get(prev); if (Number.isFinite(pv)) { const d = v - pv; const better = m.target != null ? Math.abs(v - m.target) < Math.abs(pv - m.target) : (m.lowerBetter ? d < 0 : d > 0); const cls = Math.abs(d) < 1e-9 ? "flat" : better ? "good" : "bad"; delta = `<span class="delta ${cls} num">${d > 0 ? "+" : ""}${fmt(d, m.d)} vs last</span>`; } }
+    return `<div class="metric"><span class="l">${m.label}</span><span class="v num">${fmt(v, m.d)}</span><span class="u">${m.unit}</span>${delta}</div>`;
+  }).join("");
+  $("sumNotes").value = "";
+  renderSessionViz(s, $("sumViz"));
+}
+$("sumSave").addEventListener("click", () => { if (!pending) return; pending.notes = $("sumNotes").value; sessions.push(pending); LS.set(K.sessions, sessions); pending = null; toast("Session saved"); switchView("Home"); if (LOCAL_SERVER) syncToPC(true); if (labEndpoint()) sendUnsent(true); });
+$("sumDiscard").addEventListener("click", () => { pending = null; switchView("Home"); });
+
+/* ---------------- session visuals ---------------- */
+function vizChaseMap(gng) {
+  const tr = (gng?.trials || []).filter((t) => Number.isFinite(t.u));
+  if (!tr.length) return "";
+  const w = 320, h = 340, zw = 130, zh = 162, zx = (w - zw) / 2, zy = 52, r = zw * 0.11;
+  const balls = tr.map((t) => {
+    const cx = zx + t.u * zw, cy = zy + t.v * zh;
+    const cls = t.go ? (t.tapped ? "swing" : "miss") : (t.tapped ? "chase" : "take");
+    const label = t.go ? (t.tapped ? `Swing, ${fmt(t.rt)} ms` : "Missed in zone") : (t.tapped ? `Chased, ${fmt(t.rt)} ms` : "Take");
+    return `<circle class="${cls}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}"><title>${label}</title></circle>`;
+  }).join("");
+  const chased = tr.filter((t) => !t.go && t.tapped).length, outs = tr.filter((t) => !t.go).length;
+  const missed = tr.filter((t) => t.go && !t.tapped).length, ins = tr.filter((t) => t.go).length;
+  const plate = `<path class="plate" d="M${w / 2 - 36},${zy + zh + 72} h72 v12 l-36,16 l-36,-16 z"></path>`;
+  return `<div class="vcard"><div class="l">Chase map</div>
+    <div class="head">Chased <b>${chased} of ${outs}</b> out of the zone</div>
+    <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Strike zone with each ball marked swing, take, chase or miss">
+      <rect class="zone" x="${zx}" y="${zy}" width="${zw}" height="${zh}" rx="2"></rect>${plate}${balls}
+      <text class="ax" x="${w / 2}" y="${h - 6}" text-anchor="middle">catcher's view</text></svg>
+    <div class="legend"><span><i class="swing"></i>swing in zone</span><span><i class="take"></i>take out of zone</span><span><i class="chase"></i>chase</span><span><i class="miss"></i>missed in zone</span></div>
+    <div class="cap">${missed ? `${missed} of ${ins} balls in the zone got no swing.` : `Every ball in the zone got a swing.`} Chase % is the number to watch; it needs 30+ out-of-zone balls before a change is real.</div></div>`;
+}
+function vizPursuit(p) {
+  const speeds = (p?.speeds || []).filter((s) => s.trace && s.trace.length > 10);
+  if (!speeds.length) return "";
+  const w = 320, h = 120, pl = 30, pr = 44, pt = 8, pb = 16;
+  const panels = speeds.map((s) => {
+    const amp = s.ampDeg * 1.15; const T = s.trace[s.trace.length - 1][0] - s.trace[0][0];
+    const X = (t) => pl + (w - pl - pr) * (t - s.trace[0][0]) / T;
+    const Y = (d) => pt + (h - pt - pb) * (1 - (d + amp) / (2 * amp));
+    const path = (idx) => s.trace.map((q, i) => `${i ? "L" : "M"}${X(q[0]).toFixed(1)},${Y(q[idx]).toFixed(1)}`).join(" ");
+    const last = s.trace[s.trace.length - 1];
+    return `<div class="cap">${s.hz} Hz · error ${fmt(s.rmsDeg, 1)}° · gain ${fmt(s.gain, 2)} · lag ${fmt(s.lagMs)} ms</div>
+      <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Eye position versus ball position over time at ${s.hz} Hz">
+        <line class="grid" x1="${pl}" x2="${w - pr}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"></line>
+        <text class="ax" x="${pl - 4}" y="${Y(s.ampDeg).toFixed(1) + 0}" text-anchor="end" dominant-baseline="middle">+${fmt(s.ampDeg)}°</text>
+        <text class="ax" x="${pl - 4}" y="${Y(-s.ampDeg).toFixed(1)}" text-anchor="end" dominant-baseline="middle">−${fmt(s.ampDeg)}°</text>
+        <path class="ball" d="${path(1)}"></path><path class="eye" d="${path(2)}"></path>
+        <text class="ax" x="${(X(last[0]) + 4).toFixed(1)}" y="${Y(last[1]).toFixed(1)}" dominant-baseline="middle">ball</text>
+        <text class="lbl" x="${(X(last[0]) + 4).toFixed(1)}" y="${(Y(last[2]) + (Math.abs(Y(last[2]) - Y(last[1])) < 12 ? 12 : 0)).toFixed(1)}" dominant-baseline="middle">eyes</text>
+        <text class="ax" x="${pl}" y="${h - 3}">0 s</text><text class="ax" x="${w - pr}" y="${h - 3}" text-anchor="end">${(T / 1000).toFixed(0)} s</text></svg>`;
+  }).join("");
+  return `<div class="vcard"><div class="l">Eyes vs. ball</div><div class="head">Tracking error <b>${fmt(p.rmsDeg, 1)}°</b></div>${panels}
+    <div class="cap">Grey is where the ball was, green is where the eyes were. A perfect tracker sits on the grey line; falling short of the peaks is low gain, trailing it is lag.</div></div>`;
+}
+function vizStrip(label, headHtml, vals, opts = {}) {
+  const w = 320, h = 86, pl = 10, pr = 10, pt = 18, pb = 22;
+  const xs = vals.filter((v) => Number.isFinite(v.ms)).map((v) => v.ms);
+  if (!xs.length) return "";
+  const lo = 0, hi = Math.max(opts.maxMs || 0, Math.max(...xs) * 1.1);
+  const X = (ms) => pl + (w - pl - pr) * (ms - lo) / (hi - lo);
+  const yc = pt + (h - pt - pb) / 2;
+  const med = median(xs);
+  const dots = vals.filter((v) => Number.isFinite(v.ms)).map((v, i) => { const y = yc + ((i % 3) - 1) * 9; const cls = v.cls || "dotg"; return `<circle class="${cls}" cx="${X(v.ms).toFixed(1)}" cy="${y}" r="5"><title>${v.title || fmt(v.ms) + " ms"}</title></circle>`; }).join("");
+  const ticks = [0, 200, 400, 600, 800, 1000].filter((t) => t <= hi).map((t) => `<line class="grid" x1="${X(t).toFixed(1)}" x2="${X(t).toFixed(1)}" y1="${pt - 4}" y2="${h - pb + 4}"></line><text class="ax" x="${X(t).toFixed(1)}" y="${h - 6}" text-anchor="middle">${t}</text>`).join("");
+  const refs = (opts.refs || []).map((r) => `<line class="ref" x1="${X(r.ms).toFixed(1)}" x2="${X(r.ms).toFixed(1)}" y1="${pt - 4}" y2="${h - pb + 4}"></line><text class="ax" x="${(X(r.ms) + 3).toFixed(1)}" y="${pt - 6}">${r.label}</text>`).join("");
+  return `<div class="vcard"><div class="l">${label}</div><div class="head">${headHtml}</div>
+    <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}, one dot per trial">
+      ${ticks}${refs}<line class="med" x1="${X(med).toFixed(1)}" x2="${X(med).toFixed(1)}" y1="${pt - 4}" y2="${h - pb + 4}"></line>
+      <text class="lbl" x="${(X(med) + 4).toFixed(1)}" y="${pt - 6}">median ${fmt(med)} ms</text>${dots}</svg>
+    ${opts.legend || ""}<div class="cap">${opts.cap || ""}</div></div>`;
+}
+function vizSrt(srt) {
+  if (!srt?.rts) return "";
+  const vals = srt.rts.map((ms) => ({ ms }));
+  return vizStrip("Simple reaction", `<b>${fmt(srt.medianMs)} ms</b> to react`, vals, { maxMs: 600, cap: `Spread (IQR) ${fmt(srt.iqrMs)} ms. Tighter is better: it means every rep was ready, not just the best one.` });
+}
+function vizGng(gng) {
+  if (!gng?.trials) return "";
+  const vals = gng.trials.filter((t) => t.tapped && Number.isFinite(t.rt)).map((t) => ({ ms: t.rt, cls: t.go ? "dotg" : "dotb", title: `${t.go ? "Swing" : "Chase"}, ${fmt(t.rt)} ms` }));
+  const legend = `<div class="legend"><span><i class="swing"></i>swing in zone</span><span><i class="chase"></i>chase</span></div>`;
+  return vizStrip("Swing decision", `<b>${fmt(gng.medianMs)} ms</b> to pull the trigger`, vals, { maxMs: 800, legend, cap: `Deciding fast and chasing are linked: a faster trigger often costs discipline. The goal is the same speed with fewer red dots.` });
+}
+function vizSaccades(pro, anti) {
+  const rows = [];
+  for (const [name, b] of [["Look at it", pro], ["Look away", anti]]) {
+    if (!b?.trials) continue;
+    const resp = b.trials.filter((t) => t.responded && Number.isFinite(t.latency));
+    if (!resp.length) continue;
+    rows.push({ name, vals: resp.map((t) => ({ ms: t.latency, cls: t.correct ? "dotg" : "dotw", title: `${t.correct ? "Correct" : "Wrong way"}, ${fmt(t.latency)} ms` })), b });
+  }
+  if (!rows.length) return "";
+  const legend = `<div class="legend"><span><i class="swing"></i>correct direction</span><span><i class="miss" style="border-style:solid"></i>wrong way</span></div>`;
+  return rows.map((r) => vizStrip(`Eye jump: ${r.name}`, `<b>${fmt(r.b.latencyMs)} ms</b> ${r.name === "Look away" ? `· ${fmt(r.b.errorPct)}% went the wrong way` : "to the ball"}`, r.vals, { maxMs: 500, legend, cap: r.name === "Look away" ? "Looking away from a flash is pure impulse control. Wrong-way jumps are the eye-movement version of chasing." : "How fast the eyes get to a new target. Typical adult values are a couple hundred ms." })).join("");
+}
+function vizCalibration(cal) {
+  const v = cal?.validation; if (!v || !v.length) return "";
+  const w = 320, asp = cal.stageAspect || 1.5, h = Math.round(w / asp) + 10;
+  const X = (u) => 4 + u * (w - 8), Y = (vv) => 4 + vv * (h - 18);
+  const items = v.map((p) => `<line class="vec" x1="${X(p.u).toFixed(1)}" y1="${Y(p.v).toFixed(1)}" x2="${X(p.gu).toFixed(1)}" y2="${Y(p.gv).toFixed(1)}"></line><circle class="tgt" cx="${X(p.u).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="5"><title>target</title></circle><circle class="gz" cx="${X(p.gu).toFixed(1)}" cy="${Y(p.gv).toFixed(1)}" r="4"><title>eyes: ${fmt(p.errDeg, 1)}° off</title></circle>`).join("");
+  return `<div class="vcard"><div class="l">Calibration check</div><div class="head">Eyes landed within <b>${fmt(cal.accuracyDeg, 1)}°</b></div>
+    <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Calibration targets and where the eyes landed"><rect class="cal" x="4" y="4" width="${w - 8}" height="${h - 18}" rx="4"></rect>${items}<text class="ax" x="${w / 2}" y="${h - 3}" text-anchor="middle">the screen · white = target, green = where the tracker put the eyes</text></svg>
+    <div class="cap">${cal.grade === "ok" ? "Good enough to trust the eye numbers." : cal.grade === "warn" ? "Usable, but the eye numbers carry a few degrees of uncertainty. A chin rest tightens this." : "Too loose; eye numbers from this session are not reliable."}</div></div>`;
+}
+function renderSessionViz(s, el) {
+  const b = s.blocks || {};
+  el.innerHTML = [vizChaseMap(b.gng), vizGng(b.gng), vizSrt(b.srt), vizPursuit(b.pursuit), vizSaccades(b.prosac, b.antisac), vizCalibration(b.calib)].join("") || `<p class="muted">No per-trial detail in this session.</p>`;
+}
+
+/* ---------------- trends ---------------- */
+function renderTrends() {
+  const sel = $("trendAthlete");
+  sel.innerHTML = athletes.map((a) => `<option value="${a.id}">${a.name}</option>`).join("");
+  if (!athletes.length) { $("trendCharts").innerHTML = `<p class="muted">No athletes yet.</p>`; $("trendTable").innerHTML = ""; return; }
+  if (!sel.value && athletes.length) sel.value = athletes[0].id;
+  const list = sessions.filter((s) => s.athleteId === sel.value).sort((a, b) => a.date < b.date ? -1 : 1);
+  if (!list.length) { $("trendCharts").innerHTML = `<p class="muted">No sessions for ${athleteName(sel.value)} yet. Run an assessment and save it; the trend lines appear here from the second session.</p>`; $("trendTable").innerHTML = ""; $("trendSession").innerHTML = ""; $("trendViz").innerHTML = ""; return; }
+  const ss = $("trendSession"); const keep = ss.value;
+  ss.innerHTML = list.slice().reverse().map((s) => `<option value="${s.id}">${new Date(s.date).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</option>`).join("");
+  if (keep && list.some((s) => s.id === keep)) ss.value = keep;
+  renderSessionViz(list.find((s) => s.id === ss.value) || list[list.length - 1], $("trendViz"));
+  $("trendCharts").innerHTML = METRICS.map((m) => {
+    const vals = list.map((s) => ({ d: s.date, v: m.get(s) })).filter((p) => Number.isFinite(p.v));
+    if (!vals.length) return "";
+    return `<div class="trend"><div class="l">${m.label} <span class="muted">(${m.unit})</span></div><div class="latest num">${fmt(vals[vals.length - 1].v, m.d)}</div>${sparkline(vals, m)}</div>`;
+  }).join("");
+  const head = `<tr><th>Date</th>${METRICS.map((m) => `<th class="num">${m.label}</th>`).join("")}<th>Notes</th></tr>`;
+  $("trendTable").innerHTML = head + list.map((s) => `<tr><td>${new Date(s.date).toLocaleDateString()}${s.partial ? ' <span class="tag warn">partial</span>' : ""}</td>${METRICS.map((m) => `<td class="num">${fmt(m.get(s), m.d)}</td>`).join("")}<td class="small muted">${(s.notes || "").replace(/</g, "&lt;")}</td></tr>`).join("");
+}
+function sparkline(vals, m) {
+  const w = 320, h = 110, pl = 34, pr = 10, pt = 10, pb = 18;
+  const ys = vals.map((p) => p.v); let lo = Math.min(...ys), hi = Math.max(...ys);
+  if (hi - lo < 1e-9) { lo -= 1; hi += 1; } const pad = (hi - lo) * 0.15; lo -= pad; hi += pad;
+  const X = (i) => vals.length === 1 ? (pl + (w - pl - pr) / 2) : pl + (w - pl - pr) * i / (vals.length - 1);
+  const Y = (v) => pt + (h - pt - pb) * (1 - (v - lo) / (hi - lo));
+  const path = vals.map((p, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ");
+  const area = vals.length > 1 ? `<path class="area" d="${path} L${X(vals.length - 1).toFixed(1)},${h - pb} L${X(0).toFixed(1)},${h - pb} Z"></path>` : "";
+  const mid = (lo + hi) / 2;
+  const grid = (vals.length === 1 ? [ys[0]] : [lo + pad, mid, hi - pad]).map((v) => `<line class="grid" x1="${pl}" x2="${w - pr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"></line><text class="ax" x="${pl - 4}" y="${(Y(v) + 3).toFixed(1)}" text-anchor="end">${fmt(v, m.d)}</text>`).join("");
+  const pts = vals.map((p, i) => `<circle class="pt${i === vals.length - 1 ? " last" : ""}" cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="4"><title>${new Date(p.d).toLocaleDateString()}: ${fmt(p.v, m.d)}</title></circle>`).join("");
+  const first = new Date(vals[0].d).toLocaleDateString(undefined, { month: "short", day: "numeric" }), last = new Date(vals[vals.length - 1].d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const xl = `<text class="ax" x="${pl}" y="${h - 4}">${first}</text>` + (vals.length > 1 ? `<text class="ax" x="${w - pr}" y="${h - 4}" text-anchor="end">${last}</text>` : "");
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${m.label} over ${vals.length} sessions">${grid}${area}<path class="ln" d="${path}"></path>${pts}${xl}</svg>`;
+}
+$("trendAthlete").addEventListener("change", () => { $("trendSession").value = ""; renderTrends(); });
+$("trendSession").addEventListener("change", renderTrends);
+function exportRows() {
+  return sessions.map((s) => { const row = { athlete: athleteName(s.athleteId), date: s.date, partial: !!s.partial, notes: s.notes || "" }; for (const m of METRICS) row[m.id] = m.get(s); return row; });
+}
+function copyText(txt, what) { navigator.clipboard.writeText(txt).then(() => toast(what + " copied")).catch(() => toast("Clipboard blocked; use Download")); }
+$("exportJson").addEventListener("click", () => copyText(JSON.stringify({ athletes, sessions }, null, 1), "JSON"));
+$("exportCsv").addEventListener("click", () => { const rows = exportRows(); const keys = Object.keys(rows[0] || { athlete: 1 }); const csv = [keys.join(","), ...rows.map((r) => keys.map((k) => JSON.stringify(r[k] ?? "")).join(","))].join("\n"); copyText(csv, "CSV"); });
+/* "Send to Lab": POST each saved session to a Google Apps Script drop box (see lab_dropbox.gs).
+   Works from any host, including GitHub Pages. Empty endpoint = feature hidden. */
+const LAB_ENDPOINT = "https://script.google.com/macros/s/AKfycbzOQStwc5yN70AsBpodvCecxgyrfqFhizxR1AjcHe4cFo-Q4TuMVvfzp_MXWTLCKrWk/exec";
+const labEndpoint = () => (settings.labEndpoint || LAB_ENDPOINT || "").trim();
+const LOCAL_SERVER = /^(localhost|127\.|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(location.hostname);
+function sessionSummary(s) { const o = {}; for (const m of METRICS) { const v = m.get(s); if (Number.isFinite(v)) o[m.id] = +v.toFixed(m.d + 1); } return o; }
+async function sendToLab(session) {
+  const url = labEndpoint(); if (!url) return false;
+  const a = athletes.find((x) => x.id === session.athleteId) || {};
+  const payload = { athlete: a.name || "unknown", hand: a.hand || "", sentAt: new Date().toISOString(), host: location.hostname, summary: sessionSummary(session), session };
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload), redirect: "follow" });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  session.sentToLab = new Date().toISOString(); LS.set(K.sessions, sessions);
+  return true;
+}
+async function sendUnsent(quiet) {
+  const todo = sessions.filter((s) => !s.sentToLab); if (!todo.length) { if (!quiet) toast("Everything already sent"); return; }
+  let n = 0;
+  for (const s of todo) { try { await sendToLab(s); n++; } catch (e) { if (!quiet) toast(`Send failed (${n}/${todo.length} sent): ${e.message}`); return; } }
+  toast(`Sent ${n} session${n === 1 ? "" : "s"} to the Lab`);
+}
+$("sendLabBtn").addEventListener("click", () => sendUnsent(false));
+function updateDataButtons() { $("syncBtn").hidden = !LOCAL_SERVER; $("sendLabBtn").hidden = !labEndpoint(); }
+async function syncToPC(quiet) {
+  try {
+    const r = await fetch("api/sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ athletes, sessions, exported: new Date().toISOString() }) });
+    const j = await r.json(); toast(`Synced ${j.sessions} sessions to PC`);
+  } catch (e) { if (!quiet) toast("Sync failed: is serve.py running?"); }
+}
+$("syncBtn").addEventListener("click", () => syncToPC(false));
+$("downloadJson").addEventListener("click", (e) => { e.currentTarget.href = URL.createObjectURL(new Blob([JSON.stringify({ athletes, sessions }, null, 1)], { type: "application/json" })); });
+
+/* ---------------- home / settings ---------------- */
+function renderAthletes() {
+  const sel = $("athleteSel");
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">— select —</option>` + athletes.map((a) => `<option value="${a.id}">${a.name} (${a.hand})</option>`).join("");
+  if (cur) sel.value = cur; updateStart();
+}
+$("athleteAdd").addEventListener("click", () => {
+  const name = $("athleteNew").value.trim(); if (!name) return;
+  const a = { id: Date.now().toString(36), name, hand: $("athleteHand").value, created: new Date().toISOString() };
+  athletes.push(a); LS.set(K.athletes, athletes); $("athleteNew").value = ""; renderAthletes(); $("athleteSel").value = a.id; updateStart();
+});
+$("athleteSel").addEventListener("change", updateStart);
+function renderBlocks() {
+  $("blockList").innerHTML = BLOCKS.map((b) => `<label class="block"><input type="checkbox" id="blk_${b.id}" ${settings.blocks[b.id] ? "checked" : ""}><span><div class="t">${b.name}</div><div class="d">${b.desc}</div></span></label>`).join("");
+  for (const b of BLOCKS) $("blk_" + b.id).addEventListener("change", (e) => { settings.blocks[b.id] = e.target.checked; LS.set(K.settings, settings); updateStart(); });
+}
+function updateStart() {
+  const wantEye = ["pursuit", "prosac", "antisac"].some((b) => settings.blocks[b]);
+  const ok = !!$("athleteSel").value && (!wantEye || (gaze.ready && settings.irisRefPx));
+  $("startBtn").disabled = !ok;
+  $("lockDistance").disabled = !gaze.ready;
+}
+function renderChecks() {
+  const s = gaze.latest; const items = [];
+  const face = gaze.ready ? (s && s.ok ? "ok" : s && s.blink ? "warn" : "bad") : "";
+  items.push({ cls: gaze.ready ? "ok" : "", t: "Camera", v: gaze.ready ? `${fmt(gaze.fps)} fps` : "not started" });
+  items.push({ cls: face, t: "Face tracked", v: !gaze.ready ? "—" : s && s.ok ? "yes" : s && s.blink ? "eyes closed?" : "no face" });
+  if (gaze.ready && s && s.ok) {
+    const trackPct = gaze.totalFrames ? 100 * gaze.faceFrames / gaze.totalFrames : 0;
+    items.push({ cls: trackPct > 90 ? "ok" : "warn", t: "Tracking stability", v: `${fmt(trackPct)}% of frames` });
+    if (settings.irisRefPx) { const r = s.irisPx / settings.irisRefPx; const c = Math.abs(r - 1) < 0.08 ? "ok" : Math.abs(r - 1) < 0.15 ? "warn" : "bad"; items.push({ cls: c, t: "Distance vs reference", v: `${fmt(100 * r)}% (${r > 1 ? "closer" : "farther"})` }); }
+    else items.push({ cls: "warn", t: "Distance reference", v: "not locked" });
+    items.push({ cls: s.eyeDist > 90 ? "ok" : "warn", t: "Face size in frame", v: `${fmt(s.eyeDist)} px between eyes${s.eyeDist > 90 ? "" : " (move closer / check zoom)"}` });
+  }
+  $("checks").innerHTML = items.map((i) => `<div class="check ${i.cls}"><span class="dot"></span><span><div class="v">${i.t}</div><div class="small muted">${i.v}</div></span></div>`).join("");
+  $("lockInfo").textContent = settings.irisRefPx ? `Reference: iris ${fmt(settings.irisRefPx, 1)} px at ${settings.irisRefDist} mm` : "";
+}
+setInterval(() => { if (!$("console").hidden && !$("viewHome").hidden) { renderChecks(); updateStart(); } }, 500);
+$("camStart").addEventListener("click", async () => { $("camStart").disabled = true; const ok = await startCamera(); if (!ok) $("camStart").disabled = false; else toast("Camera running"); updateStart(); });
+$("lockDistance").addEventListener("click", () => {
+  const vals = []; const t0 = performance.now();
+  const tick = setInterval(() => { if (gaze.latest && gaze.latest.ok) vals.push(gaze.latest.irisPx); if (performance.now() - t0 > 1500) { clearInterval(tick); if (vals.length < 10) { toast("Face not steady; try again"); return; } settings.irisRefPx = median(vals); settings.irisRefDist = settings.distMm; LS.set(K.settings, settings); toast("Distance reference locked"); renderChecks(); updateStart(); } }, 33);
+  toast("Hold still…");
+});
+$("startBtn").addEventListener("click", runSession);
+
+function renderSettings() {
+  $("setDist").value = settings.distMm; $("setDiag").value = settings.diagIn; $("setShowGaze").value = settings.showGaze; $("setLab").value = settings.labEndpoint || LAB_ENDPOINT;
+  const g = geometry(); $("geomInfo").textContent = `Screen ${screen.width}×${screen.height} CSS px → ${g.pxPerMm.toFixed(2)} px/mm. At ${settings.distMm} mm, 1° ≈ ${g.degToPx(1).toFixed(0)} px; the 10° saccade target is ${g.degToPx(10).toFixed(0)} px from center.`;
+}
+for (const [id, key, parse] of [["setDist", "distMm", Number], ["setDiag", "diagIn", Number], ["setShowGaze", "showGaze", Number]]) {
+  $(id).addEventListener("change", (e) => { const v = parse(e.target.value); if (Number.isFinite(v)) { settings[key] = v; LS.set(K.settings, settings); renderSettings(); } });
+}
+$("setLab").addEventListener("change", (e) => { settings.labEndpoint = e.target.value.trim(); LS.set(K.settings, settings); updateDataButtons(); });
+$("wipe").addEventListener("click", () => {
+  const b = $("wipe"); if (b.dataset.armed) { athletes = []; sessions = []; settings.irisRefPx = null; LS.set(K.athletes, athletes); LS.set(K.sessions, sessions); LS.set(K.settings, settings); delete b.dataset.armed; b.textContent = "Delete all local data"; renderAthletes(); toast("All local data deleted"); }
+  else { b.dataset.armed = "1"; b.textContent = "Tap again to confirm delete"; setTimeout(() => { delete b.dataset.armed; b.textContent = "Delete all local data"; }, 4000); }
+});
+
+function switchView(name) {
+  for (const v of ["Home", "Summary", "Trends", "Settings"]) $("view" + v).hidden = v !== name;
+  if (name === "Trends") renderTrends(); if (name === "Settings") renderSettings();
+}
+$("navHome").addEventListener("click", () => switchView("Home"));
+$("navTrends").addEventListener("click", () => switchView("Trends"));
+$("navSettings").addEventListener("click", () => switchView("Settings"));
+
+renderAthletes(); renderBlocks(); renderChecks(); loadClips(); updateDataButtons();
+if (!window.isSecureContext) toast("Not a secure page: camera will be blocked. Use https://");
+</script>
+</body>
+</html>
